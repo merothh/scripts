@@ -4,25 +4,6 @@ cyan='tput setaf 6'
 yellow='tput setaf 3'
 reset='tput sgr0'
 
-function function_check {
-if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
-    printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
-    exit
-fi
-
-if [ ! -f telegram ];
-then
-    echo "Telegram binary not present. Installing.."
-    wget -q https://raw.githubusercontent.com/Dyneteve/misc/master/telegram
-    chmod +x telegram
-fi
-
-if [ ! -d $HOME/buildscript ];
-then
-   mkdir $HOME/buildscript
-fi
-}
-
 function validate_arg {
     valid=$(echo $1 | sed s'/^[\-][a-z0-9A-Z\-]*/valid/'g)
     [ "x$1" == "x$0" ] && return 0;
@@ -105,6 +86,25 @@ while [ "$1" != "" ]; do
     prev_arg=$1
     shift
 done
+
+function function_check {
+if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
+    printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
+    exit
+fi
+
+if [ ! -f telegram ];
+then
+    echo "Telegram binary not present. Installing.."
+    wget -q https://raw.githubusercontent.com/Dyneteve/misc/master/telegram
+    chmod +x telegram
+fi
+
+if [ ! -d $HOME/buildscript ];
+then
+   mkdir $HOME/buildscript
+fi
+}
 
 sync_source() {
     if [ $sync_android_scr ]; then
