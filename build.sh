@@ -4,6 +4,7 @@ cyan='tput setaf 6'
 yellow='tput setaf 3'
 reset='tput sgr0'
 
+function function_check {
 if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
     printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
     exit
@@ -20,6 +21,7 @@ if [ ! -d $HOME/buildscript ];
 then
    mkdir $HOME/buildscript
 fi
+}
 
 function validate_arg {
     valid=$(echo $1 | sed s'/^[\-][a-z0-9A-Z\-]*/valid/'g)
@@ -57,34 +59,34 @@ while [ "$1" != "" ]; do
     case $cur_arg in
 
         -s | --sync-android )
-            sync_android=1
+            sync_android_scr=1
             ;;
         -b | --brand )
-            brand=$next_arg
+            brand_scr=$next_arg
             ;;
         -d | --device )
-            device=$next_arg
+            device_scr=$next_arg
             ;;
         -t | --target )
-            build_type=$next_arg
-            build_orig=$next_arg
+            build_type_scr=$next_arg
+            build_orig_scr=$next_arg
             ;;
         -tg | --telegram )
-            telegram=1
+            telegram_scr=1
             ;;
         -u | --upload )
-            upload=1
+            upload_scr=1
             ;;
         -r | --release )
-            telegram=1
-            upload=1
-            clean=1
+            telegram_scr=1
+            upload_scr=1
+            clean_scr=1
             ;;
         -c | --clean )
-            clean=1
+            clean_scr=1
             ;;
         -ca | --clean-all )
-            cleanall=1
+            cleanall_scr=1
             ;;
         *)
             validate_arg $cur_arg;
@@ -105,29 +107,36 @@ while [ "$1" != "" ]; do
 done
 
 sync_source() {
-    if [ $sync_android ]; then
+    if [ $sync_android_scr ]; then
         repo sync -j8 --force-sync --no-tags --no-clone-bundle -c
     fi
 }
 
-
-setup_env() {
+start_env() {
     rm -rf venv
     virtualenv2 venv
     source venv/bin/activate
-    sync_source
+}
+
+setup_paths() {
+    OUT_SCR=out/target/product/$device_scr
+    DEVICEPATH_SCR=device/$brand_scr/$device_scr
+
+    if [ -z "$build_type_scr" ]; then
+        build_type_scr=bacon
+    fi
 }
 
 clean_target() {
-    if [ $clean ] && [ ! $cleanall ]; then
+    if [ $clean_scr ] && [ ! $cleanall_scr ]; then
         printf "%s\n\n" $($cyan)
         printf "%s\n" "**************************"
-        printf '%s\n' "Cleaning target $($yellow) $device $($cyan)"
+        printf '%s\n' "Cleaning target $($yellow) $device_scr $($cyan)"
         printf "%s\n" "**************************"
         printf "%s\n\n" $($reset)
-        rm -rf out/target/product/$device
+        rm -rf $OUT_SCR
         sleep 2
-    elif [ $cleanall ]; then
+    elif [ $cleanall_scr ]; then
         printf "%s\n\n" $($cyan)
         printf "%s\n" "**************************"
         printf '%s\n' "Cleaning entire out"
@@ -142,93 +151,89 @@ upload() {
 
     if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         bash telegram -D -M "
-        *Build for $device failed!*"
+        *Build for $device_scr failed!*"
         bash telegram -f build.log
         exit
     fi
 
-    case $build_type in
+    case $build_type_scr in
         bacon)
-	        file=$(ls $OUT/*201*.zip | tail -n 1)
+	        file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
         ;;
 		bootimage)
-            file=$OUT/boot.img
+            file=$OUT_SCR/boot.img
         ;;
         recoveryimage)
-            file=$OUT/recovery.img
+            file=$OUT_SCR/recovery.img
         ;;
         dtbo)
-            file=$OUT/dtbo.img
+            file=$OUT_SCR/dtbo.img
         ;;
         systemimage)
-            file=$OUT/system.img
+            file=$OUT_SCR/system.img
         ;;
         vendorimage)
-            file=$OUT/vendor.img
+            file=$OUT_SCR/vendor.img
     esac
 
     if [ -f $HOME/buildscript/*.img ]; then
         rm $HOME/buildscript/*.img
     fi
 
-    OUT=out/target/product/$device
-
-    build_date=$(date +%F_%H-%M)
-    if [ ! -z $build_orig ] && [ $upload ]; then
-        cp $file $HOME/buildscript/"$build_type"-"$build_date".img
+    build_date_scr=$(date +%F_%H-%M)
+    if [ ! -z $build_orig_scr ] && [ $upload_scr ]; then
+        cp $file $HOME/buildscript/"$build_type_scr"-"$build_date_scr".img
         file=`ls $HOME/buildscript/*.img | tail -n 1`
         id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
-    elif [ -z $build_orig ] && [ $upload ]; then
+    elif [ -z $build_orig_scr ] && [ $upload_scr ]; then
         id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
     fi
 
-    if [ $telegram ] && [ $upload ]; then
+    if [ $telegram_scr ] && [ $upload_scr ]; then
         bash telegram -D -M "
-        *Build for $device done!*
+        *Build for $device_scr done!*
         Download: [Drive](https://drive.google.com/uc?export=download&id=$id) "
     fi
 }
 
 build() {
 
+    rm build.log
     source build/envsetup.sh
     export USE_CCACHE=1
-    rm build.log
 
-    if [ -z "$build_type" ]; then
-        build_type=bacon
-    fi
-
-    cd device/$brand/$device
-    mk=`grep .mk AndroidProducts.mk | cut -d "/" -f "2"`
-    product=`grep "PRODUCT_NAME :=" $mk | cut -d " " -f 3`
+    cd $DEVICEPATH_SCR
+    mk_scr=`grep .mk AndroidProducts.mk | cut -d "/" -f "2"`
+    product_scr=`grep "PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3`
     cd ../../..
 
     printf "%s\n\n" $($cyan)
     printf "%s\n" "***********************************************"
-    printf '%s\n' "Starting build with target $($yellow)"$build_type""$($cyan)" for"$($yellow)" $device $($cyan)"
+    printf '%s\n' "Starting build with target $($yellow)"$build_type_scr""$($cyan)" for"$($yellow)" $device_scr $($cyan)"
     printf "%s\n" "***********************************************"
     printf "%s\n\n" $($reset)
     sleep 2s
 
-    if [ "$telegram" ]; then
+    if [ "$telegram_scr" ]; then
         bash telegram -D -M "
-        *Build for $device started!*
-        Product: *$product*
-        Target: *$build_type*
+        *Build for $device_scr started!*
+        Product: *$product_scr*
+        Target: *$build_type_scr*
         Started on: *$HOSTNAME* 
         Time: *$(date "+%r")* "
     fi
 
-    ln_prd=$product
-    lunch "$ln_prd"-userdebug
-    mka $build_type |& tee build.log
+    lunch "$product_scr"-userdebug
+    mka $build_type_scr |& tee build.log
 }
 
-if [ ! -z "$device" ] && [ ! -z "$brand" ]; then
-    setup_env
+if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
+    function_check
+    sync_source
+    start_env
+    setup_paths
     clean_target
-    build $brand $device
+    build $brand_scr $device_scr
     upload
 else
     print_help
