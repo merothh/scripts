@@ -149,7 +149,7 @@ clean_target() {
 
 upload() {
 
-    if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
+    if [ $telegram_scr ] && [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         bash telegram -D -M "
         *Build for $device_scr failed!*"
         bash telegram -f build.log
