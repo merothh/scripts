@@ -87,6 +87,38 @@ while [ "$1" != "" ]; do
     shift
 done
 
+function acquire_build_lock {
+
+    local lock_name="android_build_lock"
+    local lock="$HOME/${lock_name}"
+
+    exec 200>${lock}
+
+    echo "Attempting to acquire lock $lock..."
+
+    # loop if we can't get the lock
+    while true; do
+        flock -n 200
+        if [ $? -eq 0 ]; then
+            break
+        else
+            printf "%c" "."
+            sleep 5
+        fi
+    done
+
+    # set the pid
+    pid=$$
+    echo ${pid} 1>&200
+
+    echo "Lock ${lock} acquired. PID is ${pid}"
+}
+
+function remove_build_lock {
+    echoText "Removing lock..."
+    exec 200>&-
+}
+
 function function_check {
 if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
     printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
@@ -198,7 +230,14 @@ upload() {
 
 build() {
 
-    rm build.log
+    if [ -f build.log ]; then
+        rm build.log
+    fi
+
+    if [ -f out/.lock ]; then
+        rm out/out.lock
+    fi
+
     source build/envsetup.sh
     export USE_CCACHE=1
 
@@ -229,11 +268,13 @@ build() {
 
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     function_check
+    acquire_build_lock
     sync_source
     start_env
     setup_paths
     clean_target
     build $brand_scr $device_scr
+    remove_build_lock
     upload
 else
     print_help
