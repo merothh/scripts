@@ -269,8 +269,8 @@ build() {
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     function_check
     acquire_build_lock
-    sync_source
     start_env
+    sync_source
     setup_paths
     clean_target
     build $brand_scr $device_scr
