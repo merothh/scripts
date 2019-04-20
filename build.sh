@@ -209,7 +209,7 @@ upload() {
     esac
 
     if [ -f $HOME/buildscript/*.img ]; then
-        rm $HOME/buildscript/*.img
+        rm -f $HOME/buildscript/*.img
     fi
 
     build_date_scr=$(date +%F_%H-%M)
@@ -231,11 +231,11 @@ upload() {
 build() {
 
     if [ -f build.log ]; then
-        rm build.log
+        rm -f build.log
     fi
 
     if [ -f out/.lock ]; then
-        rm out/out.lock
+        rm -f out/.lock
     fi
 
     source build/envsetup.sh
