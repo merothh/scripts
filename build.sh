@@ -111,11 +111,19 @@ function acquire_build_lock {
     pid=$$
     echo ${pid} 1>&200
 
-    echo "Lock ${lock} acquired. PID is ${pid}"
+    printf "%s\n\n" $($cyan)
+    printf "%s\n" "**************************"
+    printf '%s\n' "Lock ${lock} acquired. PID is ${pid}"
+    printf "%s\n" "**************************"
+    printf "%s\n\n" $($reset)
 }
 
 function remove_build_lock {
-    echoText "Removing lock..."
+        printf "%s\n\n" $($cyan)
+        printf "%s\n" "**************************"
+        printf '%s\n' "Removing lock"
+        printf "%s\n" "**************************"
+        printf "%s\n\n" $($reset)
     exec 200>&-
 }
 
