@@ -263,7 +263,7 @@ build() {
     fi
 
     lunch "$product_scr"-userdebug
-    mka $build_type_scr |& tee build.log
+    make -j$(nproc) $build_type_scr |& tee build.log
 }
 
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
