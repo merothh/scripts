@@ -94,7 +94,11 @@ function acquire_build_lock {
 
     exec 200>${lock}
 
-    echo "Attempting to acquire lock $lock..."
+    printf "%s\n\n" $($cyan)
+    printf "%s\n" "**************************"
+    printf '%s\n' "Attempting to acquire lock $($yellow)$lock$($cyan)"
+    printf "%s\n" "**************************"
+    printf "%s\n\n" $($reset)
 
     # loop if we can't get the lock
     while true; do
@@ -113,7 +117,7 @@ function acquire_build_lock {
 
     printf "%s\n\n" $($cyan)
     printf "%s\n" "**************************"
-    printf '%s\n' "Lock ${lock} acquired. PID is ${pid}"
+    printf '%s\n' "Lock $($yellow)${lock}$($cyan) acquired. PID is $($yellow)${pid}$($cyan)"
     printf "%s\n" "**************************"
     printf "%s\n\n" $($reset)
 }
@@ -121,7 +125,7 @@ function acquire_build_lock {
 function remove_build_lock {
         printf "%s\n\n" $($cyan)
         printf "%s\n" "**************************"
-        printf '%s\n' "Removing lock"
+        printf '%s\n' "Removing $($yellow)$lock$($cyan)"
         printf "%s\n" "**************************"
         printf "%s\n\n" $($reset)
     exec 200>&-
