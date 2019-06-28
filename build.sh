@@ -140,7 +140,7 @@ fi
 if [ ! -f telegram ];
 then
     echo "Telegram binary not present. Installing.."
-    wget -q https://raw.githubusercontent.com/Dyneteve/misc/master/telegram
+    wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
     chmod +x telegram
 fi
 
