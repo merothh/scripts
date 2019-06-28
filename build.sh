@@ -197,7 +197,11 @@ upload() {
 
     if [ $telegram_scr ] && [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         bash telegram -D -M "
-        *Build for $device_scr failed!*"
+        *Build for $device_scr FAILED!*
+        Product: *$product_scr*
+        Target: *$build_type_scr*
+        Started on: *$HOSTNAME*
+        Time: *$time_scr*"
         bash telegram -f build.log
         exit
     fi
@@ -269,12 +273,13 @@ build() {
     sleep 2s
 
     if [ "$telegram_scr" ]; then
+        time_scr="$(date "+%r")"
         bash telegram -D -M "
         *Build for $device_scr started!*
         Product: *$product_scr*
         Target: *$build_type_scr*
         Started on: *$HOSTNAME* 
-        Time: *$(date "+%r")* "
+        Time: *$time_scr*"
     fi
 
     lunch "$product_scr"-userdebug
