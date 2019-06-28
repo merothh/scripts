@@ -178,15 +178,17 @@ clean_target() {
         printf '%s\n' "Cleaning target $($yellow) $device_scr $($cyan)"
         printf "%s\n" "**************************"
         printf "%s\n\n" $($reset)
-        rm -rf $OUT_SCR
-        sleep 2
+        rm -rvf $OUT_SCR
+        printf "%s\n"
+        sleep 2s
     elif [ $cleanall_scr ]; then
         printf "%s\n\n" $($cyan)
         printf "%s\n" "**************************"
         printf '%s\n' "Cleaning entire out"
         printf "%s\n" "**************************"
         printf "%s\n\n" $($reset)
-        rm -rf out
+        printf "%s\n"
+        rm -rvf out
         sleep 2s
     fi
 }
