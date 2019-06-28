@@ -236,9 +236,10 @@ upload() {
     fi
 
     if [ $telegram_scr ] && [ $upload_scr ]; then
+        zip_name=`echo $file | grep -o '[^/]*$'`
         bash telegram -D -M "
         *Build for $device_scr done!*
-        Download: [Drive](https://drive.google.com/uc?export=download&id=$id) "
+        Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
     fi
 }
 
