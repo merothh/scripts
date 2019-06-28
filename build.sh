@@ -288,6 +288,9 @@ if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     build $brand_scr $device_scr
     remove_build_lock
     upload
+elif [ "$sync_android_scr" ]; then
+    start_env
+    sync_source
 else
     print_help
 fi
