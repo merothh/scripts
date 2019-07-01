@@ -90,8 +90,8 @@ done
 
 acquire_build_lock() {
 
-    local lock_name="android_build_lock"
-    local lock="$HOME/${lock_name}"
+    lock_name="android_build_lock"
+    lock="$HOME/${lock_name}"
 
     exec 200>${lock}
 
