@@ -4,24 +4,25 @@ cyan='tput setaf 6'
 yellow='tput setaf 3'
 reset='tput sgr0'
 
-function validate_arg {
+validate_arg() {
     valid=$(echo $1 | sed s'/^[\-][a-z0-9A-Z\-]*/valid/'g)
     [ "x$1" == "x$0" ] && return 0;
     [ "x$1" == "x" ] && return 0;
     [ "$valid" == "valid" ] && return 0 || return 1;
 }
 
-function print_help {
-                echo "Usage: `basename $0` [OPTION]";
-                echo "  -b, --brand \ Brand name" ;
-                echo "  -d, --device \ Device name" ;
-                echo "  -t, --target \ Make target" ;
-                echo "  -c, --clean \ Clean target" ;
-                echo "  -ca, --cleanall \ Clean entire out" ;
-                echo "  -tg, --telegram \ Enable telegram message" ;
-                echo "  -u, --upload \ Enable drive upload" ;
-                echo "  -r, --Release \ Enable drive upload, tg msg and clean" ;
-        exit
+print_help() {
+    echo "Usage: `basename $0` [OPTION]";
+    echo "  -s, --sync-android \ Sync current source" ;
+    echo "  -b, --brand \ Brand name" ;
+    echo "  -d, --device \ Device name" ;
+    echo "  -t, --target \ Make target" ;
+    echo "  -c, --clean \ Clean target" ;
+    echo "  -ca, --cleanall \ Clean entire out" ;
+    echo "  -tg, --telegram \ Enable telegram message" ;
+    echo "  -u, --upload \ Enable drive upload" ;
+    echo "  -r, --release \ Enable drive upload, tg msg and clean" ;
+    exit
 }
 
 prev_arg=
@@ -87,7 +88,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-function acquire_build_lock {
+acquire_build_lock() {
 
     local lock_name="android_build_lock"
     local lock="$HOME/${lock_name}"
@@ -122,32 +123,32 @@ function acquire_build_lock {
     printf "%s\n\n" $($reset)
 }
 
-function remove_build_lock {
-        printf "%s\n\n" $($cyan)
-        printf "%s\n" "**************************"
-        printf '%s\n' "Removing $($yellow)$lock$($cyan)"
-        printf "%s\n" "**************************"
-        printf "%s\n\n" $($reset)
+remove_build_lock() {
+    printf "%s\n\n" $($cyan)
+    printf "%s\n" "**************************"
+    printf '%s\n' "Removing $($yellow)$lock$($cyan)"
+    printf "%s\n" "**************************"
+    printf "%s\n\n" $($reset)
     exec 200>&-
 }
 
-function function_check {
-if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
-    printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
-    exit
-fi
+function_check() {
+    if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
+        printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
+        exit
+    fi
 
-if [ ! -f telegram ];
-then
-    echo "Telegram binary not present. Installing.."
-    wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
-    chmod +x telegram
-fi
+    if [ ! -f telegram ];
+    then
+        echo "Telegram binary not present. Installing.."
+        wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
+        chmod +x telegram
+    fi
 
-if [ ! -d $HOME/buildscript ];
-then
-   mkdir $HOME/buildscript
-fi
+    if [ ! -d $HOME/buildscript ];
+    then
+    mkdir $HOME/buildscript
+    fi
 }
 
 sync_source() {
@@ -302,4 +303,3 @@ elif [ "$sync_android_scr" ]; then
 else
     print_help
 fi
-
