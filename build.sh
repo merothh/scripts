@@ -233,7 +233,7 @@ upload() {
 
     build_date_scr=$(date +%F_%H-%M)
     if [ ! -z $build_orig_scr ] && [ $upload_scr ]; then
-        cp $file $HOME/buildscript/"$build_type_scr"-"$build_date_scr".img
+        cp $file $HOME/buildscript/$build_type_scr"_"$device_scr"-"$build_date_scr.img
         file=`ls $HOME/buildscript/*.img | tail -n 1`
         id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
     elif [ -z $build_orig_scr ] && [ $upload_scr ]; then
