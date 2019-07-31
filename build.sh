@@ -217,7 +217,7 @@ upload() {
         recoveryimage)
             file=$OUT_SCR/recovery.img
         ;;
-        dtbo)
+        dtboimage)
             file=$OUT_SCR/dtbo.img
         ;;
         systemimage)
