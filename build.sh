@@ -1,8 +1,8 @@
 #!/bin/bash
 
-acquire_build_lock() {
+acquire_lock() {
 
-    lock_name="android_build_lock"
+    lock_name="buildscript_lock"
     lock="$HOME/${lock_name}"
 
     exec 200>${lock}
@@ -96,7 +96,7 @@ clean_target() {
     fi
 }
 
-function_check() {
+check_dependencies() {
     if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
         printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
         exit
@@ -128,7 +128,7 @@ print_help() {
     exit
 }
 
-remove_build_lock() {
+remove_lock() {
     printf "%s\n\n" $($cyan)
     printf "%s\n" "**************************"
     printf '%s\n' "Removing $($yellow)$lock$($cyan)"
@@ -286,14 +286,14 @@ while [ "$1" != "" ]; do
 done
 
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
-    function_check
-    acquire_build_lock
+    check_dependencies
     start_env
-    sync_source
     setup_paths
+    acquire_lock
+    sync_source
     clean_target
     build $brand_scr $device_scr
-    remove_build_lock
+    remove_lock
     upload
 elif [ "$sync_android_scr" ]; then
     start_env
