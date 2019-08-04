@@ -140,10 +140,7 @@ remove_lock() {
 setup_paths() {
     OUT_SCR=out/target/product/$device_scr
     DEVICEPATH_SCR=device/$brand_scr/$device_scr
-
-    if [ -z "$build_type_scr" ]; then
-        build_type_scr=bacon
-    fi
+    rm -f $HOME/buildscript/*.img
 }
 
 start_env() {
@@ -190,10 +187,6 @@ upload() {
         vendorimage)
             file=$OUT_SCR/vendor.img
     esac
-
-    if [ -f $HOME/buildscript/*.img ]; then
-        rm -f $HOME/buildscript/*.img
-    fi
 
     if [ $upload_scr ]; then
         build_date_scr=$(date +%F_%H-%M)
@@ -284,6 +277,10 @@ while [ "$1" != "" ]; do
     prev_arg=$1
     shift
 done
+
+if [ -z "$build_type_scr" ]; then
+    build_type_scr=bacon
+fi
 
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     check_dependencies
