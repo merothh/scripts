@@ -51,7 +51,6 @@ while [ "$1" != "" ]; do
             ;;
         -t | --target )
             build_type_scr=$next_arg
-            build_orig_scr=$next_arg
             ;;
         -tg | --telegram )
             telegram_scr=1
@@ -231,20 +230,20 @@ upload() {
         rm -f $HOME/buildscript/*.img
     fi
 
-    build_date_scr=$(date +%F_%H-%M)
-    if [ ! -z $build_orig_scr ] && [ $upload_scr ]; then
-        cp $file $HOME/buildscript/$build_type_scr"_"$device_scr"-"$build_date_scr.img
-        file=`ls $HOME/buildscript/*.img | tail -n 1`
+    if [ $upload_scr ]; then
+        build_date_scr=$(date +%F_%H-%M)
+        if [ $build_type_scr != "bacon" ]; then
+            cp $file $HOME/buildscript/$build_type_scr"_"$device_scr"-"$build_date_scr.img
+            file=`ls $HOME/buildscript/*.img | tail -n 1`
+        fi
         id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
-    elif [ -z $build_orig_scr ] && [ $upload_scr ]; then
-        id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
-    fi
 
-    if [ $telegram_scr ] && [ $upload_scr ]; then
-        zip_name=`echo $file | grep -o '[^/]*$'`
-        bash telegram -D -M "
-        *Build for $device_scr done!*
-        Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+        if [ $telegram_scr ]; then
+            zip_name=`echo $file | grep -o '[^/]*$'`
+            bash telegram -D -M "
+            *Build for $device_scr done!*
+            Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+        fi
     fi
 }
 
