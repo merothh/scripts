@@ -254,20 +254,24 @@ upload() {
             file=`ls $HOME/buildscript/*.img | tail -n 1`
         fi
 
-        id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
-        zip_name=`echo $file | grep -o '[^/]*$'`
+        for tries in {1..3}
+        do
+            id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
+            zip_name=`echo $file | grep -o '[^/]*$'`
 
-        if [ ! -z $id ]; then
-            if [ $telegram_scr ]; then
+            if [ ! -z $id ]; then
+                if [ $telegram_scr ]; then
+                    bash telegram -D -M "
+                    *Build for $device_scr done!*
+                    Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+                fi
+                break
+            else
                 bash telegram -D -M "
-                *Build for $device_scr done!*
-                Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+                *Upload for $device_scr FAILED!* (Try \`$tries/3\`)
+                File: \`$zip_name\`"
             fi
-        else
-            bash telegram -D -M "
-            *Upload for $device_scr FAILED!*
-            File: \`$zip_name\`"
-        fi
+        done
     fi
 }
 
