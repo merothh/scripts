@@ -62,6 +62,19 @@ build() {
 
     lunch "$product_scr"-userdebug
     make -j$(nproc) $build_type_scr |& tee build.log
+
+    if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
+        if [ $telegram_scr ]; then
+            bash telegram -D -M "
+            *Build for $device_scr FAILED!*
+            Product: *$product_scr*
+            Target: *$build_type_scr*
+            Started on: *$HOSTNAME*
+            Time: *$time_scr*"
+            bash telegram -f build.log
+        fi
+        exit
+    fi
 }
 
 clean_target() {
@@ -214,17 +227,6 @@ sync_source() {
 }
 
 upload() {
-    if [ $telegram_scr ] && [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
-        bash telegram -D -M "
-        *Build for $device_scr FAILED!*
-        Product: *$product_scr*
-        Target: *$build_type_scr*
-        Started on: *$HOSTNAME*
-        Time: *$time_scr*"
-        bash telegram -f build.log
-        exit
-    fi
-
     case $build_type_scr in
         bacon)
             file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
