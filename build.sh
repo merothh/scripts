@@ -35,14 +35,6 @@ acquire_lock() {
 }
 
 build() {
-    if [ -f build.log ]; then
-        rm -f build.log
-    fi
-
-    if [ -f out/.lock ]; then
-        rm -f out/.lock
-    fi
-
     source build/envsetup.sh
     export USE_CCACHE=1
 
@@ -105,10 +97,6 @@ check_dependencies() {
         wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
         chmod +x telegram
     fi
-
-    if [ ! -d $HOME/buildscript ]; then
-        mkdir $HOME/buildscript
-    fi
 }
 
 print_help() {
@@ -137,7 +125,9 @@ remove_lock() {
 setup_paths() {
     OUT_SCR=out/target/product/$device_scr
     DEVICEPATH_SCR=device/$brand_scr/$device_scr
-    rm -f $HOME/buildscript/*.img
+
+    rm -rf build.log out/.lock $HOME/buildscript
+    mkdir -p $HOME/buildscript
 }
 
 start_env() {
@@ -166,7 +156,7 @@ upload() {
 
     case $build_type_scr in
         bacon)
-	        file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
+            file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
         ;;
         bootimage)
             file=$OUT_SCR/boot.img
