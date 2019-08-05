@@ -101,12 +101,12 @@ clean_target() {
 
 check_dependencies() {
     if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
-        printf "You don't have TELEGRAM_TOKEN,TELEGRAM_CHAT,G_FOLDER set"
+        printf "$($yellow)\$TELEGRAM_TOKEN, \$TELEGRAM_CHAT, \$G_FOLDER$($reset) $($red)not set.$($reset)\nExport it in your shell rc.\n\n$($cyan)export TELEGRAM_TOKEN=<token>\nexport TELEGRAM_CHAT=<chat-id>\nexport G_FOLDER=<folder-id>$($reset)\n"
         exit
     fi
 
     if [ ! -f telegram ]; then
-        echo "Telegram binary not present. Installing.."
+        printf "$($yellow)telegram.sh$($reset) $($cyan)not present in current directory. Fetching..$($reset)\n"
         wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
         chmod +x telegram
     fi
@@ -138,6 +138,7 @@ remove_lock() {
 set_colors() {
     cyan='tput setaf 6'
     yellow='tput setaf 3'
+    red='tput setaf 1'
     reset='tput sgr0'
 }
 
@@ -153,6 +154,7 @@ start_env() {
     rm -rf venv
     virtualenv2 venv
     source venv/bin/activate
+    printf "\n"
 }
 
 strip_args() {
@@ -223,6 +225,7 @@ strip_args() {
 sync_source() {
     if [ $sync_android_scr ]; then
         repo sync -j8 --force-sync --no-tags --no-clone-bundle -c
+        printf "\n"
     fi
 }
 
@@ -282,6 +285,7 @@ validate_arg() {
     [ "$valid" == "valid" ] && return 0 || return 1;
 }
 
+clear
 strip_args $@
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     set_colors
