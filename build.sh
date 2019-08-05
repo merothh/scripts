@@ -122,6 +122,12 @@ remove_lock() {
     exec 200>&-
 }
 
+set_colors() {
+    cyan='tput setaf 6'
+    yellow='tput setaf 3'
+    reset='tput sgr0'
+}
+
 setup_paths() {
     OUT_SCR=out/target/product/$device_scr
     DEVICEPATH_SCR=device/$brand_scr/$device_scr
@@ -199,10 +205,6 @@ validate_arg() {
     [ "$valid" == "valid" ] && return 0 || return 1;
 }
 
-cyan='tput setaf 6'
-yellow='tput setaf 3'
-reset='tput sgr0'
-
 prev_arg=
 while [ "$1" != "" ]; do
     cur_arg=$1
@@ -267,6 +269,7 @@ done
 build_type_scr=${build_type_scr:-bacon}
 
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
+    set_colors
     check_dependencies
     start_env
     acquire_lock
