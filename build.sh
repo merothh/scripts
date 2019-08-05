@@ -255,12 +255,18 @@ upload() {
         fi
 
         id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
+        zip_name=`echo $file | grep -o '[^/]*$'`
 
-        if [ $telegram_scr ]; then
-            zip_name=`echo $file | grep -o '[^/]*$'`
+        if [ ! -z $id ]; then
+            if [ $telegram_scr ]; then
+                bash telegram -D -M "
+                *Build for $device_scr done!*
+                Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+            fi
+        else
             bash telegram -D -M "
-            *Build for $device_scr done!*
-            Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+            *Upload for $device_scr FAILED!*
+            File: \`$zip_name\`"
         fi
     fi
 }
