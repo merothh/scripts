@@ -1,7 +1,6 @@
 #!/bin/bash
 
 acquire_lock() {
-
     lock_name="buildscript_lock"
     lock="$HOME/${lock_name}"
 
@@ -36,7 +35,6 @@ acquire_lock() {
 }
 
 build() {
-
     if [ -f build.log ]; then
         rm -f build.log
     fi
@@ -102,8 +100,7 @@ check_dependencies() {
         exit
     fi
 
-    if [ ! -f telegram ];
-    then
+    if [ ! -f telegram ]; then
         echo "Telegram binary not present. Installing.."
         wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
         chmod +x telegram
@@ -156,7 +153,6 @@ sync_source() {
 }
 
 upload() {
-
     if [ $telegram_scr ] && [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         bash telegram -D -M "
         *Build for $device_scr FAILED!*
@@ -172,7 +168,7 @@ upload() {
         bacon)
 	        file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
         ;;
-		bootimage)
+        bootimage)
             file=$OUT_SCR/boot.img
         ;;
         recoveryimage)
@@ -194,6 +190,7 @@ upload() {
             cp $file $HOME/buildscript/$build_type_scr"_"$device_scr"-"$build_date_scr.img
             file=`ls $HOME/buildscript/*.img | tail -n 1`
         fi
+
         id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
 
         if [ $telegram_scr ]; then
@@ -230,7 +227,6 @@ while [ "$1" != "" ]; do
     fi
 
     case $cur_arg in
-
         -s | --sync-android )
             sync_android_scr=1
             ;;
@@ -278,9 +274,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z "$build_type_scr" ]; then
-    build_type_scr=bacon
-fi
+build_type_scr=${build_type_scr:-bacon}
 
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     check_dependencies
