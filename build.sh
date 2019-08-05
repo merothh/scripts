@@ -142,6 +142,71 @@ start_env() {
     source venv/bin/activate
 }
 
+strip_args() {
+    prev_arg=
+    while [ "$1" != "" ]; do
+        cur_arg=$1
+
+        # find arguments of the form --arg=val and split to --arg val
+        if [ -n "`echo $cur_arg | grep -o =`" ]; then
+            cur_arg=`echo $1 | cut -d'=' -f 1`
+            next_arg=`echo $1 | cut -d'=' -f 2`
+        else
+            cur_arg=$1
+            next_arg=$2
+        fi
+
+        case $cur_arg in
+            -s | --sync-android )
+                sync_android_scr=1
+                ;;
+            -b | --brand )
+                brand_scr=$next_arg
+                ;;
+            -d | --device )
+                device_scr=$next_arg
+                ;;
+            -t | --target )
+                build_type_scr=$next_arg
+                ;;
+            -tg | --telegram )
+                telegram_scr=1
+                ;;
+            -u | --upload )
+                upload_scr=1
+                ;;
+            -r | --release )
+                telegram_scr=1
+                upload_scr=1
+                clean_scr=1
+                ;;
+            -c | --clean )
+                clean_scr=1
+                ;;
+            -ca | --clean-all )
+                cleanall_scr=1
+                ;;
+            *)
+                validate_arg $cur_arg;
+                if [ $? -eq 0 ]; then
+                    echo "Unrecognised option $cur_arg passed"
+                    print_help
+                else
+                    validate_arg $prev_arg
+                    if [ $? -eq 1 ]; then
+                        echo "Argument $cur_arg passed without flag option"
+                        print_help
+                    fi
+                fi
+                ;;
+        esac
+        prev_arg=$1
+        shift
+    done
+
+    build_type_scr=${build_type_scr:-bacon}
+}
+
 sync_source() {
     if [ $sync_android_scr ]; then
         repo sync -j8 --force-sync --no-tags --no-clone-bundle -c
@@ -205,69 +270,7 @@ validate_arg() {
     [ "$valid" == "valid" ] && return 0 || return 1;
 }
 
-prev_arg=
-while [ "$1" != "" ]; do
-    cur_arg=$1
-
-    # find arguments of the form --arg=val and split to --arg val
-    if [ -n "`echo $cur_arg | grep -o =`" ]; then
-        cur_arg=`echo $1 | cut -d'=' -f 1`
-        next_arg=`echo $1 | cut -d'=' -f 2`
-    else
-        cur_arg=$1
-        next_arg=$2
-    fi
-
-    case $cur_arg in
-        -s | --sync-android )
-            sync_android_scr=1
-            ;;
-        -b | --brand )
-            brand_scr=$next_arg
-            ;;
-        -d | --device )
-            device_scr=$next_arg
-            ;;
-        -t | --target )
-            build_type_scr=$next_arg
-            ;;
-        -tg | --telegram )
-            telegram_scr=1
-            ;;
-        -u | --upload )
-            upload_scr=1
-            ;;
-        -r | --release )
-            telegram_scr=1
-            upload_scr=1
-            clean_scr=1
-            ;;
-        -c | --clean )
-            clean_scr=1
-            ;;
-        -ca | --clean-all )
-            cleanall_scr=1
-            ;;
-        *)
-            validate_arg $cur_arg;
-            if [ $? -eq 0 ]; then
-                echo "Unrecognised option $cur_arg passed"
-                print_help
-            else
-                validate_arg $prev_arg
-                if [ $? -eq 1 ]; then
-                    echo "Argument $cur_arg passed without flag option"
-                    print_help
-                fi
-            fi
-            ;;
-    esac
-    prev_arg=$1
-    shift
-done
-
-build_type_scr=${build_type_scr:-bacon}
-
+strip_args $@
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     set_colors
     check_dependencies
