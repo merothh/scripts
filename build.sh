@@ -269,9 +269,9 @@ build_type_scr=${build_type_scr:-bacon}
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     check_dependencies
     start_env
-    setup_paths
     acquire_lock
     sync_source
+    setup_paths
     clean_target
     build $brand_scr $device_scr
     remove_lock
