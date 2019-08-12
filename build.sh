@@ -150,7 +150,7 @@ setup_paths() {
     mkdir -p $HOME/buildscript
 }
 
-start_env() {
+start_venv() {
     rm -rf venv
     virtualenv2 venv
     source venv/bin/activate
@@ -290,7 +290,7 @@ strip_args $@
 if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     set_colors
     check_dependencies
-    start_env
+    start_venv
     acquire_lock
     sync_source
     setup_paths
@@ -299,7 +299,7 @@ if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     remove_lock
     upload
 elif [ "$sync_android_scr" ]; then
-    start_env
+    start_venv
     sync_source
 else
     print_help
