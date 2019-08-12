@@ -151,10 +151,13 @@ setup_paths() {
 }
 
 start_venv() {
-    rm -rf venv
-    virtualenv2 venv
-    source venv/bin/activate
-    printf "\n"
+    python_version=$(python --version)
+    if [ "${python_version:0:8}" = "Python 3" ]; then
+        rm -rf venv
+        virtualenv2 venv
+        source venv/bin/activate
+        printf "\n"
+    fi
 }
 
 strip_args() {
