@@ -38,10 +38,15 @@ build() {
     source build/envsetup.sh
     export USE_CCACHE=1
 
-    cd $DEVICEPATH_SCR
-    mk_scr=$(grep .mk AndroidProducts.mk | cut -d "/" -f "2")
-    product_scr=$(grep "PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3)
-    cd ../../..
+    if [ -d $DEVICEPATH_SCR ]; then
+        cd $DEVICEPATH_SCR
+        mk_scr=$(grep .mk AndroidProducts.mk | cut -d "/" -f "2")
+        product_scr=$(grep "PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3)
+        cd ../../..
+    else
+        printf "$($yellow)Device tree$($reset) $($cyan)not present. Exiting..$($reset)\n"
+        exit
+    fi
 
     printf "%s\n\n" $($cyan)
     printf "%s\n" "***********************************************"
