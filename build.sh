@@ -45,6 +45,7 @@ build() {
         cd ../../..
     else
         printf "$($yellow)Device tree$($reset) $($cyan)not present. Exiting..$($reset)\n"
+        remove_lock
         exit
     fi
 
