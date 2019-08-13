@@ -233,7 +233,7 @@ strip_args() {
 
 sync_source() {
     if [ $sync_android_scr ]; then
-        repo sync -j8 --force-sync --no-tags --no-clone-bundle -c
+        repo sync --force-sync --current-branch --no-tags --no-clone-bundle --optimized-fetch --prune -j8
         printf "\n"
     fi
 }
