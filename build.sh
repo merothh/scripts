@@ -51,7 +51,7 @@ build() {
 
     printf "%s\n\n" $($cyan)
     printf "%s\n" "***********************************************"
-    printf '%s\n' "Starting build with target $($yellow)"$build_type_scr""$($cyan)" for"$($yellow)" $device_scr $($cyan)"
+    printf '%s\n' "Starting build with target $($yellow)"$build_target_scr""$($cyan)" for"$($yellow)" $device_scr $($cyan)"
     printf "%s\n" "***********************************************"
     printf "%s\n\n" $($reset)
     sleep 2s
@@ -61,20 +61,22 @@ build() {
         bash telegram -D -M "
         *Build for $device_scr started!*
         Product: *$product_scr*
-        Target: *$build_type_scr*
+        Target: *$build_target_scr*
+        Build Variant: *$build_variant_scr*
         Started on: *$HOSTNAME* 
         Time: *$time_scr*"
     fi
 
-    lunch "$product_scr"-userdebug
-    make -j$(nproc) $build_type_scr |& tee build.log
+    lunch "$product_scr"-"$build_variant_scr"
+    make -j$(nproc) $build_target_scr |& tee build.log
 
     if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         if [ $telegram_scr ]; then
             bash telegram -D -M "
             *Build for $device_scr FAILED!*
             Product: *$product_scr*
-            Target: *$build_type_scr*
+            Target: *$build_target_scr*
+            Build Variant: *$build_variant_scr*
             Started on: *$HOSTNAME*
             Time: *$time_scr*"
             bash telegram -f build.log
@@ -124,6 +126,7 @@ print_help() {
     echo "  -b, --brand \ Brand name"
     echo "  -d, --device \ Device name"
     echo "  -t, --target \ Make target"
+    echo "  -bt, --build-type \ Build type"
     echo "  -c, --clean \ Clean target"
     echo "  -ca, --cleanall \ Clean entire out"
     echo "  -tg, --telegram \ Enable telegram message"
@@ -191,7 +194,10 @@ strip_args() {
             device_scr=$next_arg
             ;;
         -t | --target)
-            build_type_scr=$next_arg
+            build_target_scr=$next_arg
+            ;;
+        -bt | --build-type)
+            build_variant_scr=$next_arg
             ;;
         -tg | --telegram)
             telegram_scr=1
@@ -228,7 +234,8 @@ strip_args() {
         shift
     done
 
-    build_type_scr=${build_type_scr:-bacon}
+    build_target_scr=${build_target_scr:-bacon}
+    build_variant_scr=${build_variant_scr:-userdebug}
 }
 
 sync_source() {
@@ -239,7 +246,7 @@ sync_source() {
 }
 
 upload() {
-    case $build_type_scr in
+    case $build_target_scr in
     bacon)
         file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
         ;;
@@ -262,8 +269,8 @@ upload() {
 
     if [ $upload_scr ]; then
         build_date_scr=$(date +%F_%H-%M)
-        if [ $build_type_scr != "bacon" ]; then
-            cp $file $HOME/buildscript/$build_type_scr"_"$device_scr"-"$build_date_scr.img
+        if [ $build_target_scr != "bacon" ]; then
+            cp $file $HOME/buildscript/$build_target_scr"_"$device_scr"-"$build_date_scr.img
             file=$(ls $HOME/buildscript/*.img | tail -n 1)
         fi
 
