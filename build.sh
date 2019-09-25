@@ -41,7 +41,7 @@ build() {
     if [ -d $DEVICEPATH_SCR ]; then
         cd $DEVICEPATH_SCR
         mk_scr=$(grep .mk AndroidProducts.mk | cut -d "/" -f "2")
-        product_scr=$(grep "PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3)
+        product_scr=$(grep "^PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3)
         cd ../../..
     else
         printf "$($yellow)Device tree$($reset) $($cyan)not present. Exiting..$($reset)\n"
