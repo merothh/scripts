@@ -248,7 +248,7 @@ sync_source() {
 upload() {
     case $build_target_scr in
     bacon)
-        file=$(ls $OUT_SCR/*201*.zip | tail -n 1)
+        file=$(ls $OUT_SCR/*202*.zip | tail -n 1)
         ;;
     bootimage)
         file=$OUT_SCR/boot.img
