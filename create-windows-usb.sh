@@ -8,8 +8,6 @@ export TEMPDIR="$(mktemp -d winimage-XXXXXX)"
 export SOURCE="source"
 export TARGET="target"
 
-apt-get install parted rsync wimtools
-
 # Directory for mounting the ISO image
 mkdir "${SOURCE}"
 
