@@ -2,11 +2,11 @@
 # credits goto the original author
 # https://ypcs.fi/howto/2018/12/01/windowsiso/
 
-export ISOFILE="$1"
-export USBDEVICE="$2"
-export TEMPDIR="$(mktemp -d winimage-XXXXXX)"
-export SOURCE="source"
-export TARGET="target"
+ISOFILE="$1"
+USBDEVICE="$2"
+TEMPDIR="$(mktemp -d winimage-XXXXXX)"
+SOURCE="source"
+TARGET="target"
 
 # Directory for mounting the ISO image
 mkdir "${SOURCE}"
