@@ -2,8 +2,8 @@
 # credits goto the original author
 # https://ypcs.fi/howto/2018/12/01/windowsiso/
 
-export ISOFILE="Win10_1809Oct_EnglishInternational_x64.iso"
-export USBDEVICE="/dev/sda"
+export ISOFILE="$1"
+export USBDEVICE="$2"
 export TEMPDIR="$(mktemp -d winimage-XXXXXX)"
 export SOURCE="source"
 export TARGET="target"
