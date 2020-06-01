@@ -271,7 +271,10 @@ upload() {
         build_date_scr=$(date +%F_%H-%M)
         if [ $build_target_scr != "bacon" ]; then
             cp $file $HOME/buildscript/$build_target_scr"_"$device_scr"-"$build_date_scr.img
-            file=$(ls $HOME/buildscript/*.img | tail -n 1)
+            pushd $HOME/buildscript > /dev/null
+            zip -j $build_target_scr"_"$device_scr"-"$build_date_scr.img.zip $build_target_scr"_"$device_scr"-"$build_date_scr.img
+            popd > /dev/null
+            file=$(ls $HOME/buildscript/*.img.zip | tail -n 1)
         fi
 
         for tries in {1..3}; do
