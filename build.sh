@@ -47,11 +47,11 @@ build() {
         exit
     fi
 
-    printf "%s\n\n" $($cyan)
-    printf "%s\n" "***********************************************"
-    printf '%s\n' "Starting build with target(s) $($yellow)"$build_targets_scr""$($cyan)" for"$($yellow)" $device_scr $($cyan)"
-    printf "%s\n" "***********************************************"
-    printf "%s\n\n" $($reset)
+    printf '%s\n\n' "$($cyan)"
+    printf '%s\n' "***********************************************"
+    printf '%s\n' "Starting build with target(s) $($yellow)$build_targets_scr$($cyan) for$($yellow) $device_scr $($cyan)"
+    printf '%s\n' "***********************************************"
+    printf '%s\n\n' "$($reset)"
     sleep 2s
 
     if [ "$telegram_scr" ]; then
