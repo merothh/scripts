@@ -252,24 +252,24 @@ sync_source() {
 upload() {
     case $build_target_scr in
     bacon)
-        file=$(ls $OUT_SCR/*202*.zip | tail -n 1)
+        file_scr=$(ls $OUT_SCR/*202*.zip | tail -n 1)
         ;;
     *image)
-        file=$OUT_SCR/$(echo $build_target_scr | sed 's/image//').img
+        file_scr=$OUT_SCR/$(echo $build_target_scr | sed 's/image//').img
         ;;
     esac
 
     if [ $upload_scr ]; then
         build_date_scr=$(date +%F_%H-%M)
         if [[ $build_target_scr =~ .*image ]]; then
-            cp $file $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
+            cp $file_scr $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
             zip -j $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img.zip $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
-            file=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
+            file_scr=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
         fi
 
         for tries in {1..3}; do
-            id=$(gdrive upload --parent $G_FOLDER $file | grep "Uploaded" | cut -d " " -f 2)
-            zip_name=$(echo $file | grep -o '[^/]*$')
+            id=$(gdrive upload --parent $G_FOLDER $file_scr | grep "Uploaded" | cut -d " " -f 2)
+            zip_name=$(echo $file_scr | grep -o '[^/]*$')
 
             if [ ! -z $id ]; then
                 if [ $telegram_scr ]; then
