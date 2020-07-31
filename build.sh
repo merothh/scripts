@@ -153,9 +153,10 @@ set_colors() {
 setup_paths() {
     OUT_SCR=out/target/product/$device_scr
     DEVICEPATH_SCR=device/$brand_scr/$device_scr
+    WORKDIR_SCR=$HOME/.buildscript
 
-    rm -rf build.log out/.lock $HOME/buildscript
-    mkdir -p $HOME/buildscript
+    rm -rf build.log out/.lock $WORKDIR_SCR
+    mkdir -p $WORKDIR_SCR
 }
 
 start_venv() {
@@ -261,11 +262,9 @@ upload() {
     if [ $upload_scr ]; then
         build_date_scr=$(date +%F_%H-%M)
         if [[ $build_target_scr =~ .*image ]]; then
-            cp $file $HOME/buildscript/$build_target_scr"_"$device_scr"-"$build_date_scr.img
-            pushd $HOME/buildscript > /dev/null
-            zip -j $build_target_scr"_"$device_scr"-"$build_date_scr.img.zip $build_target_scr"_"$device_scr"-"$build_date_scr.img
-            popd > /dev/null
-            file=$(ls $HOME/buildscript/*.img.zip | tail -n 1)
+            cp $file $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
+            zip -j $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img.zip $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
+            file=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
         fi
 
         for tries in {1..3}; do
