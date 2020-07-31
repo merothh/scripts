@@ -39,10 +39,8 @@ build() {
     export USE_CCACHE=1
 
     if [ -d $DEVICEPATH_SCR ]; then
-        cd $DEVICEPATH_SCR
-        mk_scr=$(grep .mk AndroidProducts.mk | cut -d "/" -f "2")
-        product_scr=$(grep "^PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3)
-        cd ../../..
+        mk_scr=$(grep .mk $DEVICEPATH_SCR/AndroidProducts.mk | cut -d "/" -f "2")
+        product_scr=$(grep "^PRODUCT_NAME :=" $DEVICEPATH_SCR/$mk_scr | cut -d " " -f 3)
     else
         printf "$($yellow)Device tree$($reset) $($cyan)not present. Bailing!$($reset)\n"
         remove_lock
