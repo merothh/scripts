@@ -44,7 +44,7 @@ build() {
         product_scr=$(grep "^PRODUCT_NAME :=" $mk_scr | cut -d " " -f 3)
         cd ../../..
     else
-        printf "$($yellow)Device tree$($reset) $($cyan)not present. Exiting..$($reset)\n"
+        printf "$($yellow)Device tree$($reset) $($cyan)not present. Bailing!$($reset)\n"
         remove_lock
         exit
     fi
