@@ -250,24 +250,23 @@ sync_source() {
 }
 
 upload() {
-    targets_scr=( $build_targets_scr )
-    for target_scr in ${targets_scr[@]}; do
-        case $target_scr in
-        bacon)
-            file_scr=$(ls $OUT_SCR/*202*.zip | tail -n 1)
-            ;;
-        *image)
-            file_scr=$OUT_SCR/$(echo $target_scr | sed 's/image//').img
-            ;;
-        esac
+    if [ $upload_scr ]; then
+        build_date_scr=$(date +%F_%H-%M)
+        targets_scr=( $build_targets_scr )
 
-        if [ $upload_scr ]; then
-            build_date_scr=$(date +%F_%H-%M)
-            if [[ "$target_scr" =~ .*image ]]; then
+        for target_scr in ${targets_scr[@]}; do
+            case $target_scr in
+            bacon)
+                file_scr=$(ls $OUT_SCR/*202*.zip | tail -n 1)
+                ;;
+            *image)
+                file_scr=$OUT_SCR/$(echo $target_scr | sed 's/image//').img
+
                 cp $file_scr $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img
                 zip -j $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img.zip $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img
                 file_scr=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
-            fi
+                ;;
+            esac
 
             for tries in {1..3}; do
                 id=$(gdrive upload --parent $G_FOLDER $file_scr | grep "Uploaded" | cut -d " " -f 2)
@@ -286,8 +285,8 @@ upload() {
                     File: \`$zip_name\`"
                 fi
             done
-        fi
-    done
+        done
+    fi
 }
 
 validate_arg() {
