@@ -253,20 +253,8 @@ upload() {
     bacon)
         file=$(ls $OUT_SCR/*202*.zip | tail -n 1)
         ;;
-    bootimage)
-        file=$OUT_SCR/boot.img
-        ;;
-    recoveryimage)
-        file=$OUT_SCR/recovery.img
-        ;;
-    dtboimage)
-        file=$OUT_SCR/dtbo.img
-        ;;
-    systemimage)
-        file=$OUT_SCR/system.img
-        ;;
-    vendorimage)
-        file=$OUT_SCR/vendor.img
+    *image)
+        file=$OUT_SCR/$(echo $build_target_scr | sed 's/image//').img
         ;;
     esac
 
