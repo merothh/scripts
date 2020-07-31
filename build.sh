@@ -66,7 +66,7 @@ build() {
     fi
 
     lunch "$product_scr"-"$build_variant_scr"
-    make -j$(nproc) $build_target_scr |& tee build.log
+    make -j$jobs_scr $build_target_scr |& tee build.log
 
     if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         if [ $telegram_scr ]; then
@@ -124,6 +124,7 @@ print_help() {
     echo "  -b, --brand \ Brand name"
     echo "  -d, --device \ Device name"
     echo "  -t, --target \ Make target"
+    echo "  -j, --jobs \ Number of parallel jobs"
     echo "  -bt, --build-type \ Build type"
     echo "  -c, --clean \ Clean target"
     echo "  -ca, --cleanall \ Clean entire out"
@@ -191,6 +192,9 @@ strip_args() {
         -d | --device)
             device_scr=$next_arg
             ;;
+        -j | --jobs)
+            jobs_scr=$next_arg
+            ;;
         -t | --target)
             build_target_scr=$next_arg
             ;;
@@ -234,6 +238,7 @@ strip_args() {
 
     build_target_scr=${build_target_scr:-bacon}
     build_variant_scr=${build_variant_scr:-userdebug}
+    jobs_scr=${jobs_scr:-$(nproc)}
 }
 
 sync_source() {
