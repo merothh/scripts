@@ -49,7 +49,7 @@ build() {
 
     printf "%s\n\n" $($cyan)
     printf "%s\n" "***********************************************"
-    printf '%s\n' "Starting build with target $($yellow)"$build_target_scr""$($cyan)" for"$($yellow)" $device_scr $($cyan)"
+    printf '%s\n' "Starting build with target(s) $($yellow)"$build_targets_scr""$($cyan)" for"$($yellow)" $device_scr $($cyan)"
     printf "%s\n" "***********************************************"
     printf "%s\n\n" $($reset)
     sleep 2s
@@ -59,21 +59,21 @@ build() {
         bash telegram -D -M "
         *Build for $device_scr started!*
         Product: *$product_scr*
-        Target: *$build_target_scr*
+        Target(s): *$build_targets_scr*
         Build Variant: *$build_variant_scr*
         Started on: *$HOSTNAME* 
         Time: *$time_scr*"
     fi
 
     lunch "$product_scr"-"$build_variant_scr"
-    make -j$jobs_scr $build_target_scr |& tee build.log
+    make -j$jobs_scr $build_targets_scr |& tee build.log
 
     if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
         if [ $telegram_scr ]; then
             bash telegram -D -M "
             *Build for $device_scr FAILED!*
             Product: *$product_scr*
-            Target: *$build_target_scr*
+            Target(s): *$build_targets_scr*
             Build Variant: *$build_variant_scr*
             Started on: *$HOSTNAME*
             Time: *$time_scr*"
@@ -197,7 +197,7 @@ strip_args() {
             jobs_scr=$next_arg
             ;;
         -t | --target)
-            build_target_scr=$next_arg
+            build_targets_scr=$(echo $next_arg | sed 's/,/ /g')
             ;;
         -bt | --build-type)
             build_variant_scr=$next_arg
@@ -237,7 +237,7 @@ strip_args() {
         shift
     done
 
-    build_target_scr=${build_target_scr:-bacon}
+    build_targets_scr=${build_targets_scr:-bacon}
     build_variant_scr=${build_variant_scr:-userdebug}
     jobs_scr=${jobs_scr:-$(nproc)}
 }
@@ -250,41 +250,44 @@ sync_source() {
 }
 
 upload() {
-    case $build_target_scr in
-    bacon)
-        file_scr=$(ls $OUT_SCR/*202*.zip | tail -n 1)
-        ;;
-    *image)
-        file_scr=$OUT_SCR/$(echo $build_target_scr | sed 's/image//').img
-        ;;
-    esac
+    targets_scr=( $build_targets_scr )
+    for target_scr in ${targets_scr[@]}; do
+        case $target_scr in
+        bacon)
+            file_scr=$(ls $OUT_SCR/*202*.zip | tail -n 1)
+            ;;
+        *image)
+            file_scr=$OUT_SCR/$(echo $target_scr | sed 's/image//').img
+            ;;
+        esac
 
-    if [ $upload_scr ]; then
-        build_date_scr=$(date +%F_%H-%M)
-        if [[ $build_target_scr =~ .*image ]]; then
-            cp $file_scr $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
-            zip -j $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img.zip $WORKDIR_SCR/$build_target_scr"_"$device_scr"-"$build_date_scr.img
-            file_scr=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
-        fi
-
-        for tries in {1..3}; do
-            id=$(gdrive upload --parent $G_FOLDER $file_scr | grep "Uploaded" | cut -d " " -f 2)
-            zip_name=$(echo $file_scr | grep -o '[^/]*$')
-
-            if [ ! -z $id ]; then
-                if [ $telegram_scr ]; then
-                    bash telegram -D -M "
-                    *Build for $device_scr done!*
-                    Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
-                fi
-                break
-            else
-                bash telegram -D -M "
-                *Upload for $device_scr FAILED!* (Try \`$tries/3\`)
-                File: \`$zip_name\`"
+        if [ $upload_scr ]; then
+            build_date_scr=$(date +%F_%H-%M)
+            if [[ "$target_scr" =~ .*image ]]; then
+                cp $file_scr $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img
+                zip -j $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img.zip $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img
+                file_scr=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
             fi
-        done
-    fi
+
+            for tries in {1..3}; do
+                id=$(gdrive upload --parent $G_FOLDER $file_scr | grep "Uploaded" | cut -d " " -f 2)
+                zip_name=$(echo $file_scr | grep -o '[^/]*$')
+
+                if [ ! -z $id ]; then
+                    if [ $telegram_scr ]; then
+                        bash telegram -D -M "
+                        *Build for $device_scr done!*
+                        Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
+                    fi
+                    break
+                else
+                    bash telegram -D -M "
+                    *Upload for $device_scr FAILED!* (Try \`$tries/3\`)
+                    File: \`$zip_name\`"
+                fi
+            done
+        fi
+    done
 }
 
 validate_arg() {
