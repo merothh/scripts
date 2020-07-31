@@ -260,7 +260,7 @@ upload() {
 
     if [ $upload_scr ]; then
         build_date_scr=$(date +%F_%H-%M)
-        if [ $build_target_scr != "bacon" ]; then
+        if [[ $build_target_scr =~ .*image ]]; then
             cp $file $HOME/buildscript/$build_target_scr"_"$device_scr"-"$build_date_scr.img
             pushd $HOME/buildscript > /dev/null
             zip -j $build_target_scr"_"$device_scr"-"$build_date_scr.img.zip $build_target_scr"_"$device_scr"-"$build_date_scr.img
