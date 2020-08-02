@@ -4,18 +4,17 @@ acquire_lock() {
     lock_name="buildscript_lock"
     lock="$HOME/${lock_name}"
 
-    exec 200>${lock}
+    exec 200>"${lock}"
 
-    printf "%s\n\n" $($cyan)
+    printf "%s\n\n" "$($cyan)"
     printf "%s\n" "**************************"
     printf '%s\n' "Attempting to acquire lock $($yellow)$lock$($cyan)"
     printf "%s\n" "**************************"
-    printf "%s\n\n" $($reset)
+    printf "%s\n\n" "$($reset)"
 
     # loop if we can't get the lock
     while true; do
-        flock -n 200
-        if [ $? -eq 0 ]; then
+        if flock -n 200; then
             break
         else
             printf "%c" "."
@@ -27,22 +26,23 @@ acquire_lock() {
     pid=$$
     echo ${pid} 1>&200
 
-    printf "%s\n\n" $($cyan)
+    printf "%s\n\n" "$($cyan)"
     printf "%s\n" "**************************"
     printf '%s\n' "Lock $($yellow)${lock}$($cyan) acquired. PID is $($yellow)${pid}$($cyan)"
     printf "%s\n" "**************************"
-    printf "%s\n\n" $($reset)
+    printf "%s\n\n" "$($reset)"
 }
 
 build() {
+    # shellcheck disable=SC1091
     source build/envsetup.sh
     export USE_CCACHE=1
 
-    if [ -d $DEVICEPATH_SCR ]; then
-        mk_scr=$(grep .mk $DEVICEPATH_SCR/AndroidProducts.mk | cut -d "/" -f "2")
-        product_scr=$(grep "^PRODUCT_NAME :=" $DEVICEPATH_SCR/$mk_scr | cut -d " " -f 3)
+    if [ -d "$DEVICEPATH_SCR" ]; then
+        mk_scr=$(grep .mk "$DEVICEPATH_SCR"/AndroidProducts.mk | cut -d "/" -f "2")
+        product_scr=$(grep "^PRODUCT_NAME :=" "$DEVICEPATH_SCR/$mk_scr" | cut -d " " -f 3)
     else
-        printf "$($yellow)Device tree$($reset) $($cyan)not present. Bailing!$($reset)\n"
+        printf '%s\n' "$($yellow)Device tree$($reset) $($cyan)not present. Bailing!$($reset)"
         remove_lock
         exit
     fi
@@ -66,10 +66,10 @@ build() {
     fi
 
     lunch "$product_scr"-"$build_variant_scr"
-    make -j$jobs_scr $build_targets_scr |& tee build.log
+    make -j"$jobs_scr" "$build_targets_scr" |& tee build.log
 
-    if [ ! $(grep -c "#### build completed successfully" build.log) -eq 1 ]; then
-        if [ $telegram_scr ]; then
+    if [ ! "$(grep -c '#### build completed successfully' build.log)" -eq 1 ]; then
+        if [ "$telegram_scr" ]; then
             bash telegram -D -M "
             *Build for $device_scr FAILED!*
             Product: *$product_scr*
@@ -84,42 +84,42 @@ build() {
 }
 
 clean_target() {
-    if [ $clean_scr ] && [ ! $cleanall_scr ]; then
-        printf "%s\n\n" $($cyan)
+    if [ "$clean_scr" ] && [ ! "$cleanall_scr" ]; then
+        printf "%s\n\n" "$($cyan)"
         printf "%s\n" "**************************"
         printf '%s\n' "Cleaning target $($yellow) $device_scr $($cyan)"
         printf "%s\n" "**************************"
-        printf "%s\n\n" $($reset)
-        rm -rvf $OUT_SCR
-        printf "%s\n"
+        printf "%s\n\n" "$($reset)"
+        rm -rvf "$OUT_SCR"
+        printf "\n"
         sleep 2s
-    elif [ $cleanall_scr ]; then
-        printf "%s\n\n" $($cyan)
+    elif [ "$cleanall_scr" ]; then
+        printf "%s\n\n" "$($cyan)"
         printf "%s\n" "**************************"
         printf '%s\n' "Cleaning entire out"
         printf "%s\n" "**************************"
-        printf "%s\n\n" $($reset)
-        printf "%s\n"
+        printf "%s\n\n" "$($reset)"
+        printf "\n"
         rm -rvf out
         sleep 2s
     fi
 }
 
 check_dependencies() {
-    if [ ! $TELEGRAM_TOKEN ] && [ ! $TELEGRAM_CHAT ] && [ ! $G_FOLDER ]; then
-        printf "$($yellow)\$TELEGRAM_TOKEN, \$TELEGRAM_CHAT, \$G_FOLDER$($reset) $($red)not set.$($reset)\nExport it in your shell rc.\n\n$($cyan)export TELEGRAM_TOKEN=<token>\nexport TELEGRAM_CHAT=<chat-id>\nexport G_FOLDER=<folder-id>$($reset)\n"
+    if [ ! "$TELEGRAM_TOKEN" ] && [ ! "$TELEGRAM_CHAT" ] && [ ! "$G_FOLDER" ]; then
+        printf '%s\n' "$($yellow)\$TELEGRAM_TOKEN, \$TELEGRAM_CHAT, \$G_FOLDER$($reset) $($red)not set.$($reset)\nExport it in your shell rc.\n\n$($cyan)export TELEGRAM_TOKEN=<token>\nexport TELEGRAM_CHAT=<chat-id>\nexport G_FOLDER=<folder-id>$($reset)"
         exit
     fi
 
     if [ ! -f telegram ]; then
-        printf "$($yellow)telegram.sh$($reset) $($cyan)not present in current directory. Fetching..$($reset)\n"
+        printf '%s\n' "$($yellow)telegram.sh$($reset) $($cyan)not present in current directory. Fetching..$($reset)\n"
         wget -q https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
         chmod +x telegram
     fi
 }
 
 print_help() {
-    echo "Usage: $(basename $0) [OPTION]"
+    echo "Usage: $(basename "$0") [OPTION]"
     echo "  -s, --sync-android \ Sync current source"
     echo "  -b, --brand \ Brand name"
     echo "  -d, --device \ Device name"
@@ -135,11 +135,11 @@ print_help() {
 }
 
 remove_lock() {
-    printf "%s\n\n" $($cyan)
+    printf "%s\n\n" "$($cyan)"
     printf "%s\n" "**************************"
     printf '%s\n' "Removing $($yellow)$lock$($cyan)"
     printf "%s\n" "**************************"
-    printf "%s\n\n" $($reset)
+    printf "%s\n\n" "$($reset)"
     exec 200>&-
 }
 
@@ -155,8 +155,8 @@ setup_paths() {
     DEVICEPATH_SCR=device/$brand_scr/$device_scr
     WORKDIR_SCR=$HOME/.buildscript
 
-    rm -rf build.log out/.lock $WORKDIR_SCR
-    mkdir -p $WORKDIR_SCR
+    rm -rf build.log out/.lock "$WORKDIR_SCR"
+    mkdir -p "$WORKDIR_SCR"
 }
 
 start_venv() {
@@ -164,6 +164,7 @@ start_venv() {
     if [ "${python_version:0:8}" = "Python 3" ]; then
         rm -rf venv
         virtualenv2 venv
+        # shellcheck disable=SC1091
         source venv/bin/activate
         printf "\n"
     fi
@@ -175,9 +176,9 @@ strip_args() {
         cur_arg=$1
 
         # find arguments of the form --arg=val and split to --arg val
-        if [ -n "$(echo $cur_arg | grep -o =)" ]; then
-            cur_arg=$(echo $1 | cut -d'=' -f 1)
-            next_arg=$(echo $1 | cut -d'=' -f 2)
+        if echo "$cur_arg" | grep -q =; then
+            cur_arg=$(echo "$1" | cut -d'=' -f 1)
+            next_arg=$(echo "$1" | cut -d'=' -f 2)
         else
             cur_arg=$1
             next_arg=$2
@@ -197,7 +198,7 @@ strip_args() {
             jobs_scr=$next_arg
             ;;
         -t | --target)
-            build_targets_scr=$(echo $next_arg | sed 's/,/ /g')
+            build_targets_scr=${next_arg//,/ }
             ;;
         -bt | --build-type)
             build_variant_scr=$next_arg
@@ -220,12 +221,11 @@ strip_args() {
             cleanall_scr=1
             ;;
         *)
-            validate_arg $cur_arg
-            if [ $? -eq 0 ]; then
+            if validate_arg "$cur_arg"; then
                 echo "Unrecognised option $cur_arg passed"
                 print_help
             else
-                validate_arg $prev_arg
+                validate_arg "$prev_arg"
                 if [ $? -eq 1 ]; then
                     echo "Argument $cur_arg passed without flag option"
                     print_help
@@ -252,28 +252,28 @@ sync_source() {
 upload() {
     if [ $upload_scr ]; then
         build_date_scr=$(date +%F_%H-%M)
-        targets_scr=( $build_targets_scr )
+        targets_scr=( "$build_targets_scr" )
 
         for target_scr in ${targets_scr[@]}; do
             case $target_scr in
             bacon)
-                file_scr=$(ls $OUT_SCR/*202*.zip | tail -n 1)
+                file_scr=$(find "$OUT_SCR"/*202*.zip | tail -n 1)
                 ;;
             *image)
-                file_scr=$OUT_SCR/$(echo $target_scr | sed 's/image//').img
+                file_scr=$OUT_SCR/${target_scr//image/}.img
 
-                cp $file_scr $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img
-                zip -j $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img.zip $WORKDIR_SCR/$target_scr"_"$device_scr"-"$build_date_scr.img
-                file_scr=$(ls $WORKDIR_SCR/*.img.zip | tail -n 1)
+                cp "$file_scr" "$WORKDIR_SCR"/"$target_scr"_"$device_scr"-"$build_date_scr".img
+                zip -j "$WORKDIR_SCR"/"$target_scr"_"$device_scr"-"$build_date_scr".img.zip "$WORKDIR_SCR"/"$target_scr"_"$device_scr"-"$build_date_scr".img
+                file_scr=$(find "$WORKDIR_SCR"/*.img.zip | tail -n 1)
                 ;;
             esac
 
             for tries in {1..3}; do
-                id=$(gdrive upload --parent $G_FOLDER $file_scr | grep "Uploaded" | cut -d " " -f 2)
-                zip_name=$(echo $file_scr | grep -o '[^/]*$')
+                id=$(gdrive upload --parent "$G_FOLDER" "$file_scr" | grep "Uploaded" | cut -d " " -f 2)
+                zip_name=$(echo "$file_scr" | grep -o '[^/]*$')
 
                 if [ $telegram_scr ]; then
-                    if [ ! -z $id ]; then
+                    if [ -n "$id" ]; then
                         bash telegram -D -M "
                         *Build for $device_scr done!*
                         Download: [$zip_name](https://drive.google.com/uc?export=download&id=$id) "
@@ -290,15 +290,15 @@ upload() {
 }
 
 validate_arg() {
-    valid=$(echo $1 | sed s'/^[\-][a-z0-9A-Z\-]*/valid/'g)
+    valid=$(echo "$1" | sed 's/^[\-][a-z0-9A-Z\-]*/valid/g')
     [ "x$1" == "x$0" ] && return 0
     [ "x$1" == "x" ] && return 0
     [ "$valid" == "valid" ] && return 0 || return 1
 }
 
 clear
-strip_args $@
-if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
+strip_args "$@"
+if [ -n "$device_scr" ] && [ -n "$brand_scr" ]; then
     set_colors
     check_dependencies
     start_venv
@@ -306,7 +306,7 @@ if [ ! -z "$device_scr" ] && [ ! -z "$brand_scr" ]; then
     sync_source
     setup_paths
     clean_target
-    build $brand_scr $device_scr
+    build "$brand_scr" "$device_scr"
     remove_lock
     upload
 elif [ "$sync_android_scr" ]; then
