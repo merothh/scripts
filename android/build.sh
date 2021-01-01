@@ -55,7 +55,7 @@ build() {
     sleep 2s
 
     if [ "$telegram_scr" ]; then
-        time_scr="$(date "+%r")"
+        time_scr=$(TZ=IST-5:30 date "+%r")
         bash telegram -D -M "
         *Build for $device_scr started!*
         Product: *$product_scr*
