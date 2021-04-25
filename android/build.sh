@@ -301,7 +301,6 @@ strip_args "$@"
 if [ -n "$device_scr" ] && [ -n "$brand_scr" ]; then
     set_colors
     check_dependencies
-    start_venv
     acquire_lock
     sync_source
     setup_paths
@@ -310,7 +309,6 @@ if [ -n "$device_scr" ] && [ -n "$brand_scr" ]; then
     remove_lock
     upload
 elif [ "$sync_android_scr" ]; then
-    start_venv
     sync_source
 else
     print_help
